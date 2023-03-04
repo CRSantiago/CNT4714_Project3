@@ -4,12 +4,21 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import com.mysql.cj.jdbc.DatabaseMetaData;
+import com.mysql.cj.jdbc.MysqlDataSource;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -17,7 +26,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 	
 	JComboBox fileComboBox;
 	JTextField usernameTextField;
-	JTextField passwordTextField;
+	JPasswordField passwordField;
 	
 	JButton connectToDBbutton;
 	
@@ -28,6 +37,8 @@ public class SQL_GUI extends JFrame implements ActionListener {
 	JTextField statusTextField;
 	
 	JButton clearResultsButton;
+	
+	String fileName;
 	
 	SQL_GUI(){
 		this.setTitle("SQL Client App");
@@ -85,10 +96,10 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		passwordLabel.setBackground(Color.LIGHT_GRAY);
 		passwordLabel.setBorder(new EmptyBorder(0,10,0,0));
 		
-		passwordTextField = new JTextField();
-		passwordTextField.setFont(new Font("Lucida Console", Font.PLAIN, 12));
-		passwordTextField.setBackground(Color.white);
-		passwordTextField.setBounds(140,122,225,25);
+		passwordField = new JPasswordField(15);
+		passwordField.setFont(new Font("Lucida Console", Font.PLAIN, 12));
+		passwordField.setBackground(Color.white);
+		passwordField.setBounds(140,122,225,25);
 		
 		connectToDBbutton = new JButton("Connect to Database");
 		connectToDBbutton.setFont(new Font("Lucida Console", Font.PLAIN, 12));
@@ -105,7 +116,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		connectionPanel.add(usernameLabel);
 		connectionPanel.add(usernameTextField);
 		connectionPanel.add(passwordLabel);
-		connectionPanel.add(passwordTextField);
+		connectionPanel.add(passwordField);
 		connectionPanel.add(connectToDBbutton);
 		
 		JPanel commandPanel = new JPanel();
@@ -192,11 +203,44 @@ public class SQL_GUI extends JFrame implements ActionListener {
 	@Override 
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == fileComboBox) {
-			System.out.println(fileComboBox.getSelectedItem());
+			fileName = (String) fileComboBox.getSelectedItem();
+//			System.out.println(fileName);
 		}
 		
-		if(e.getSource() == connectToDBbutton) {
-			System.out.println("try to connect to db");
+		if(e.getSource() == connectToDBbutton) {	
+			Properties properties = new Properties();
+			FileInputStream filein = null;
+			MysqlDataSource dataSource = null;
+			
+			
+				try {
+					filein = new FileInputStream("src/" + fileName);
+					properties.load(filein);
+					String password = new String(passwordField.getPassword());
+					if (
+							usernameTextField.getText().equals( (String) properties.getProperty("MYSQL_DB_USERNAME"))
+							&& password.equals(properties.getProperty("MYSQL_DB_PASSWORD"))
+					) {
+						dataSource = new MysqlDataSource();
+						dataSource.setURL(properties.getProperty("MYSQL_DB_URL"));
+						dataSource.setUser(properties.getProperty("MYSQL_DB_USERNAME"));
+						dataSource.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
+						
+						try {
+							Connection connection = dataSource.getConnection();
+							statusTextField.setText("Connected To: " + properties.getProperty("MYSQL_DB_URL"));
+							statusTextField.setForeground(Color.YELLOW);
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					} else {
+						statusTextField.setText("Not Connected - User Credentials Do Not Match Properties Files!");
+					}
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			
 		}
 		
 		if(e.getSource() == clearCommandButton) {
