@@ -19,6 +19,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -30,7 +31,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 	
 	JButton connectToDBbutton;
 	
-	JTextField commandTextField;
+	JTextArea commandTextArea;
 	JButton clearCommandButton;
 	JButton executeCommandButton;
 	
@@ -130,8 +131,9 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		commandTitle.setBounds(20,5,200,20);
 		commandTitle.setFont(new Font("Lucida Console", Font.PLAIN, 12));
 		
-		commandTextField = new JTextField();
-		commandTextField.setBounds(20, 25, 370, 150);
+		commandTextArea = new JTextArea();
+		commandTextArea.setBounds(20, 25, 370, 150);
+		commandTextArea.setCaretPosition(0);
 		
 		clearCommandButton = new JButton("Clear SQL Command");
 		clearCommandButton.setBounds(20, 180, 170, 30);
@@ -146,7 +148,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		executeCommandButton.addActionListener(this);
 		
 		commandPanel.add(commandTitle);
-		commandPanel.add(commandTextField);
+		commandPanel.add(commandTextArea);
 		commandPanel.add(clearCommandButton);
 		commandPanel.add(executeCommandButton);
 		
@@ -211,16 +213,19 @@ public class SQL_GUI extends JFrame implements ActionListener {
 			Properties properties = new Properties();
 			FileInputStream filein = null;
 			MysqlDataSource dataSource = null;
-			
+			boolean usernameMatch;
+			boolean passwordMatch;
 			
 				try {
+					//set property and file object
 					filein = new FileInputStream("src/" + fileName);
 					properties.load(filein);
-					String password = new String(passwordField.getPassword());
-					if (
-							usernameTextField.getText().equals( (String) properties.getProperty("MYSQL_DB_USERNAME"))
-							&& password.equals(properties.getProperty("MYSQL_DB_PASSWORD"))
-					) {
+					// get password from passwordField
+					String password = new String(passwordField.getPassword()); // password field return char[] instead os String
+					// test username and password with properties fields
+					usernameMatch = usernameTextField.getText().equals( (String) properties.getProperty("MYSQL_DB_USERNAME"));
+					passwordMatch = password.equals(properties.getProperty("MYSQL_DB_PASSWORD"));
+					if (usernameMatch && passwordMatch) {
 						dataSource = new MysqlDataSource();
 						dataSource.setURL(properties.getProperty("MYSQL_DB_URL"));
 						dataSource.setUser(properties.getProperty("MYSQL_DB_USERNAME"));
@@ -244,11 +249,13 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		}
 		
 		if(e.getSource() == clearCommandButton) {
-			System.out.println("clear ommand button pressed!");
+			System.out.println("clear command button pressed!");
+			commandTextArea.setText("");
 		} 
 		
 		if(e.getSource() == executeCommandButton) {
-			System.out.println("Eexecute command button presses!");
+			System.out.println("Execute command button presses!");
+			System.out.println(commandTextArea.getText());
 		}
 		
 		if(e.getSource() == clearResultsButton) {
