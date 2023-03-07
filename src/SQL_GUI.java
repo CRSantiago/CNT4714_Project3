@@ -6,22 +6,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 
 import com.mysql.cj.jdbc.DatabaseMetaData;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import com.mysql.cj.jdbc.result.ResultSetMetaData;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 public class SQL_GUI extends JFrame implements ActionListener {
 	
@@ -40,6 +44,13 @@ public class SQL_GUI extends JFrame implements ActionListener {
 	JButton clearResultsButton;
 	
 	String fileName;
+	
+	JTable resultTable;
+	
+	Connection connection;
+	MysqlDataSource dataSource = null;
+	boolean connectionEstablished = false;
+	DefaultTableModel tableModel;
 	
 	SQL_GUI(){
 		this.setTitle("SQL Client App");
@@ -182,9 +193,11 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		southPanelTitle.setBounds(20,40,300,20);
 		southPanelTitle.setFont(new Font("Lucida Console", Font.PLAIN, 12));
 		
-		JTextField resultTextField = new JTextField();
-		resultTextField.setEditable(false);
-		resultTextField.setBounds(20, 60, 750, 250);
+		resultTable = new JTable();
+//		resultTable.setBounds(20, 60, 750, 250);
+		
+		JScrollPane scrollPane = new JScrollPane(resultTable);
+		scrollPane.setBounds(20, 60, 750, 250);
 		
 		clearResultsButton = new JButton("Clear Result Window");
 		clearResultsButton.setBounds(10, 315, 170, 30);
@@ -193,7 +206,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		clearResultsButton.addActionListener(this);
 		
 		southPanel.add(southPanelTitle);
-		southPanel.add(resultTextField);
+		southPanel.add(scrollPane);
 		southPanel.add(clearResultsButton);
 		
 		
@@ -212,7 +225,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		if(e.getSource() == connectToDBbutton) {	
 			Properties properties = new Properties();
 			FileInputStream filein = null;
-			MysqlDataSource dataSource = null;
+//			MysqlDataSource dataSource = null;
 			boolean usernameMatch;
 			boolean passwordMatch;
 			
@@ -225,6 +238,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 					// test username and password with properties fields
 					usernameMatch = usernameTextField.getText().equals( (String) properties.getProperty("MYSQL_DB_USERNAME"));
 					passwordMatch = password.equals(properties.getProperty("MYSQL_DB_PASSWORD"));
+					//if match found - set data source object to allow for database connection
 					if (usernameMatch && passwordMatch) {
 						dataSource = new MysqlDataSource();
 						dataSource.setURL(properties.getProperty("MYSQL_DB_URL"));
@@ -232,14 +246,18 @@ public class SQL_GUI extends JFrame implements ActionListener {
 						dataSource.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
 						
 						try {
+							//establish a connection to the dataSource - the database
 							Connection connection = dataSource.getConnection();
+							//set status to connected by changing field properties
 							statusTextField.setText("Connected To: " + properties.getProperty("MYSQL_DB_URL"));
 							statusTextField.setForeground(Color.YELLOW);
+							connectionEstablished = true;
 						} catch (SQLException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					} else {
+						//inform user of unsuccessful connection
 						statusTextField.setText("Not Connected - User Credentials Do Not Match Properties Files!");
 					}
 				} catch (IOException e1) {
@@ -255,11 +273,88 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		
 		if(e.getSource() == executeCommandButton) {
 			System.out.println("Execute command button presses!");
+//			Properties properties = new Properties();
+//			FileInputStream filein = null;
+//			MysqlDataSource dataSource = null;
+//			boolean usernameMatch;
+//			boolean passwordMatch;
+//			
+//				try {
+//					//set property and file object
+//					filein = new FileInputStream("src/" + fileName);
+//					properties.load(filein);
+//					// get password from passwordField
+//					String password = new String(passwordField.getPassword()); // password field return char[] instead os String
+//					// test username and password with properties fields
+//					usernameMatch = usernameTextField.getText().equals( (String) properties.getProperty("MYSQL_DB_USERNAME"));
+//					passwordMatch = password.equals(properties.getProperty("MYSQL_DB_PASSWORD"));
+//					if (usernameMatch && passwordMatch) {
+//						dataSource = new MysqlDataSource();
+//						dataSource.setURL(properties.getProperty("MYSQL_DB_URL"));
+//						dataSource.setUser(properties.getProperty("MYSQL_DB_USERNAME"));
+//						dataSource.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
+				if(connectionEstablished) {
+						try {
+							Connection connection = dataSource.getConnection();
+							 // Execute SQL query and store result set
+				            Statement stmt = connection.createStatement();
+				            ResultSet rs;
+				            int numRowsUpdated;
+				            if(commandTextArea.getText().toLowerCase().contains("select")) {
+				            	try {
+					            	rs = stmt.executeQuery(commandTextArea.getText());
+					            	 /// Create a DefaultTableModel to hold the data
+						            tableModel = new DefaultTableModel();
+	
+							         // Get the column count from the result set
+							         int columnCount = rs.getMetaData().getColumnCount();
+			
+							         // Add column names to the table model
+							         for (int i = 1; i <= columnCount; i++) {
+							             tableModel.addColumn(rs.getMetaData().getColumnName(i));
+							         }
+	
+							         // Add rows to the table model
+							         while (rs.next()) {
+							             Object[] row = new Object[columnCount];
+							             for (int i = 1; i <= columnCount; i++) {
+							                 row[i-1] = rs.getObject(i);
+							             }
+							             tableModel.addRow(row);
+							         }
+	
+						            // Set the table model as the model for the JTable
+						            resultTable.setModel(tableModel);
+				            	} catch (SQLException e1) {
+				            		JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
+								}
+				            } else {
+				            	try {
+					            	numRowsUpdated = stmt.executeUpdate(commandTextArea.getText());
+					            	JOptionPane.showMessageDialog(this, "Successful Update.." + numRowsUpdated + " rows updated.");
+				            	} catch (SQLException e1) {
+									JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
+								}
+				            }
+
+				           
+						} catch (SQLException e1) {
+							JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
+						}
+					} else {
+						statusTextField.setText("Not Connected - User Credentials Do Not Match Properties Files!");
+					}
+//				} catch (IOException e1) {
+//					e1.printStackTrace();
+//				}
 			System.out.println(commandTextArea.getText());
+		//}
 		}
 		
 		if(e.getSource() == clearResultsButton) {
 			System.out.println("Clear Result button pressed!");
+			tableModel.setColumnCount(0);
+			tableModel.setRowCount(0);
 		}
 	}
 }
