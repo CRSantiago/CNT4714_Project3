@@ -339,8 +339,11 @@ public class SQL_GUI extends JFrame implements ActionListener {
 									try {
 										//establish a connection to the dataSource - the database
 										Connection connectionOp = dataSourceOp.getConnection();
+										// create statement object
 										Statement stmtOp = connectionOp.createStatement();
+										// update operationscount
 										stmtOp.executeUpdate("update operationscount set num_queries = num_queries + 1");
+										// close statement and connection
 										stmtOp.close();
 										connectionOp.close();
 										} catch (SQLException e1) {
@@ -376,8 +379,11 @@ public class SQL_GUI extends JFrame implements ActionListener {
 									try {
 										//establish a connection to the dataSource - the database
 										Connection connectionOp = dataSourceOp.getConnection();
+										// create statement object
 										Statement stmtOp = connectionOp.createStatement();
+										// update operationscount
 										stmtOp.executeUpdate("update operationscount set num_updates = num_updates + 1");
+										// close statement and connection
 										stmtOp.close();
 										connectionOp.close();
 										} catch (SQLException e1) {
