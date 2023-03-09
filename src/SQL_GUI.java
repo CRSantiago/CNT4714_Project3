@@ -1,3 +1,12 @@
+/*
+Name: Christopher Santiago
+Course: CNT 4714 Spring 2023
+Assignment title: Project 3 – A Two-tier Client-Server Application
+Date: March 9, 2023
+
+Class: SQL_GUI
+*/
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,10 +18,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
 
-import com.mysql.cj.jdbc.DatabaseMetaData;
 import com.mysql.cj.jdbc.MysqlDataSource;
-import com.mysql.cj.jdbc.result.ResultSetMetaData;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -29,46 +35,55 @@ import javax.swing.table.DefaultTableModel;
 
 public class SQL_GUI extends JFrame implements ActionListener {
 	
-	JComboBox fileComboBox;
-	JTextField usernameTextField;
-	JPasswordField passwordField;
+	private JComboBox fileComboBox;
+	private JTextField usernameTextField;
+	private JPasswordField passwordField;
 	
-	JButton connectToDBbutton;
+	private JButton connectToDBbutton;
 	
-	JTextArea commandTextArea;
-	JButton clearCommandButton;
-	JButton executeCommandButton;
+	private JTextArea commandTextArea;
+	private JButton clearCommandButton;
+	private JButton executeCommandButton;
 	
-	JTextField statusTextField;
+	private JTextField statusTextField;
 	
-	JButton clearResultsButton;
+	private JButton clearResultsButton;
 	
-	String fileName;
+	private String fileName;
 	
-	JTable resultTable;
+	private JTable resultTable;
 	
-	Connection connection;
-	MysqlDataSource dataSource = null;
-	boolean connectionEstablished = false;
-	DefaultTableModel tableModel;
+	private Connection connection;
+	private MysqlDataSource dataSource = null;
+	private boolean connectionEstablished = false;
+	private DefaultTableModel tableModel;
 	
 	SQL_GUI(){
 		this.setTitle("SQL Client App");
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // exit out of application
 		this.setSize(800,600);
-		this.setResizable(false);
+		this.setResizable(false); // keep fixed size
 		
-		
+		/* 
+		 * Beginning of north panel
+		 * Houses connection panel, command panel and status panel
+		*/
 		JPanel northPanel = new JPanel();
 		northPanel.setPreferredSize(new Dimension(800,250));
 		northPanel.setBackground(Color.red);
 		northPanel.setLayout(new BorderLayout());
 		
+		/* 
+		 * Beginning of connection panel
+		 * Houses all labels and textfields to establish connections, and connections button. 
+		*/
 		JPanel connectionPanel = new JPanel();
-		connectionPanel.setLayout(null);
+		connectionPanel.setLayout(null); // allows for use of absoluta positioning
 		connectionPanel.setPreferredSize(new Dimension(400,250));
+		
+		// label to identify connection panel
 		JLabel connectionTitle = new JLabel("Connection Details");
-		connectionTitle.setOpaque(true);
+//		connectionTitle.setOpaque(true);
 		connectionTitle.setForeground(Color.BLUE);
 		connectionTitle.setBounds(10,10,180,20);
 		connectionTitle.setFont(new Font("Lucida Console", Font.PLAIN, 12));
@@ -134,7 +149,6 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		JPanel commandPanel = new JPanel();
 		commandPanel.setLayout(null);
 		commandPanel.setPreferredSize(new Dimension(400,250));
-//		commandPanel.setBackground(Color.darkGray);
 		
 		JLabel commandTitle = new JLabel("Enter An SQL Command");
 		commandTitle.setOpaque(true);
@@ -181,10 +195,14 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		northPanel.add(connectionPanel, BorderLayout.WEST);
 		northPanel.add(commandPanel, BorderLayout.EAST);
 		northPanel.add(statusPanel, BorderLayout.SOUTH);
+		//end of north panel
 		
+		/*
+		 * Begining of south panel
+		 * Houses results table and clear result button
+		*/
 		JPanel southPanel = new JPanel();
 		southPanel.setPreferredSize(new Dimension(800,350));
-//		southPanel.setBackground(Color.GRAY);
 		southPanel.setLayout(null);
 		
 		JLabel southPanelTitle = new JLabel("SQL Execution Result Window");
@@ -194,7 +212,6 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		southPanelTitle.setFont(new Font("Lucida Console", Font.PLAIN, 12));
 		
 		resultTable = new JTable();
-//		resultTable.setBounds(20, 60, 750, 250);
 		
 		JScrollPane scrollPane = new JScrollPane(resultTable);
 		scrollPane.setBounds(20, 60, 750, 250);
@@ -208,24 +225,23 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		southPanel.add(southPanelTitle);
 		southPanel.add(scrollPane);
 		southPanel.add(clearResultsButton);
+		// end of south panel
 		
-		
+		// add north and south panel to frame
 		this.add(northPanel,BorderLayout.NORTH);
 		this.add(southPanel, BorderLayout.SOUTH);
 		this.setVisible(true);
-	}
+	} // end of constructor
 	
 	@Override 
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == fileComboBox) {
 			fileName = (String) fileComboBox.getSelectedItem();
-//			System.out.println(fileName);
 		}
 		
 		if(e.getSource() == connectToDBbutton) {	
 			Properties properties = new Properties();
 			FileInputStream filein = null;
-//			MysqlDataSource dataSource = null;
 			boolean usernameMatch;
 			boolean passwordMatch;
 			
@@ -267,95 +283,131 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		}
 		
 		if(e.getSource() == clearCommandButton) {
-			System.out.println("clear command button pressed!");
+			//clear command field
 			commandTextArea.setText("");
 		} 
 		
 		if(e.getSource() == executeCommandButton) {
-			System.out.println("Execute command button presses!");
-//			Properties properties = new Properties();
-//			FileInputStream filein = null;
-//			MysqlDataSource dataSource = null;
-//			boolean usernameMatch;
-//			boolean passwordMatch;
-//			
-//				try {
-//					//set property and file object
-//					filein = new FileInputStream("src/" + fileName);
-//					properties.load(filein);
-//					// get password from passwordField
-//					String password = new String(passwordField.getPassword()); // password field return char[] instead os String
-//					// test username and password with properties fields
-//					usernameMatch = usernameTextField.getText().equals( (String) properties.getProperty("MYSQL_DB_USERNAME"));
-//					passwordMatch = password.equals(properties.getProperty("MYSQL_DB_PASSWORD"));
-//					if (usernameMatch && passwordMatch) {
-//						dataSource = new MysqlDataSource();
-//						dataSource.setURL(properties.getProperty("MYSQL_DB_URL"));
-//						dataSource.setUser(properties.getProperty("MYSQL_DB_USERNAME"));
-//						dataSource.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
-				if(connectionEstablished) {
-						try {
-							Connection connection = dataSource.getConnection();
-							 // Execute SQL query and store result set
-				            Statement stmt = connection.createStatement();
-				            ResultSet rs;
-				            int numRowsUpdated;
-				            if(commandTextArea.getText().toLowerCase().contains("select")) {
-				            	try {
-					            	rs = stmt.executeQuery(commandTextArea.getText());
-					            	 /// Create a DefaultTableModel to hold the data
-						            tableModel = new DefaultTableModel();
-	
-							         // Get the column count from the result set
-							         int columnCount = rs.getMetaData().getColumnCount();
-			
-							         // Add column names to the table model
-							         for (int i = 1; i <= columnCount; i++) {
-							             tableModel.addColumn(rs.getMetaData().getColumnName(i));
-							         }
-	
-							         // Add rows to the table model
-							         while (rs.next()) {
-							             Object[] row = new Object[columnCount];
-							             for (int i = 1; i <= columnCount; i++) {
-							                 row[i-1] = rs.getObject(i);
-							             }
-							             tableModel.addRow(row);
-							         }
-	
-						            // Set the table model as the model for the JTable
-						            resultTable.setModel(tableModel);
-				            	} catch (SQLException e1) {
+			//System.out.println("Execute command button presses!");
+			if(connectionEstablished) {
+				try {
+					Connection connection = dataSource.getConnection();
+					// Execute SQL query and store result set
+				    Statement stmt = connection.createStatement();
+				    ResultSet rs;
+				    int numRowsUpdated;
+				    if(commandTextArea.getText().toLowerCase().contains("select")) {
+					    try {
+					    	rs = stmt.executeQuery(commandTextArea.getText());
+						    // Create a DefaultTableModel to hold the data
+							tableModel = new DefaultTableModel();
+		
+							// Get the column count from the result set
+							int columnCount = rs.getMetaData().getColumnCount();
+				
+							// Add column names to the table model
+							for (int i = 1; i <= columnCount; i++) {
+								tableModel.addColumn(rs.getMetaData().getColumnName(i));
+							}
+		
+							// Add rows to the table model
+							while (rs.next()) {
+								Object[] row = new Object[columnCount];
+								for (int i = 1; i <= columnCount; i++) {
+									row[i-1] = rs.getObject(i);
+						         }
+								 tableModel.addRow(row);
+							}
+		
+							// Set the table model as the model for the JTable
+							resultTable.setModel(tableModel);
+							
+							// update operations log as operations user.
+							Properties properties = new Properties();
+							FileInputStream filein = null;
+							
+								try {
+									//set property and file object
+									filein = new FileInputStream("src/operations.properties");
+									properties.load(filein);
+								
+									MysqlDataSource dataSourceOp = new MysqlDataSource();
+									dataSourceOp.setURL(properties.getProperty("MYSQL_DB_URL"));
+									dataSourceOp.setUser(properties.getProperty("MYSQL_DB_USERNAME"));
+									dataSourceOp.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
+										
+									try {
+										//establish a connection to the dataSource - the database
+										Connection connectionOp = dataSourceOp.getConnection();
+										Statement stmtOp = connectionOp.createStatement();
+										stmtOp.executeUpdate("update operationscount set num_queries = num_queries + 1");
+										stmtOp.close();
+										connectionOp.close();
+										} catch (SQLException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										}
+									} catch (IOException e1) {
+									e1.printStackTrace();
+								}
+							
+							
+				    	} catch (SQLException e1) {
 				            		JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
+						} //end of try catch to run select command and update table
+				    } else {
+				    	try {
+				    		numRowsUpdated = stmt.executeUpdate(commandTextArea.getText());
+					        JOptionPane.showMessageDialog(this, "Successful Update.." + numRowsUpdated + " rows updated.");
+					     // update operations log as operations user.
+							Properties properties = new Properties();
+							FileInputStream filein = null;
+							
+								try {
+									//set property and file object
+									filein = new FileInputStream("src/operations.properties");
+									properties.load(filein);
+								
+									MysqlDataSource dataSourceOp = new MysqlDataSource();
+									dataSourceOp.setURL(properties.getProperty("MYSQL_DB_URL"));
+									dataSourceOp.setUser(properties.getProperty("MYSQL_DB_USERNAME"));
+									dataSourceOp.setPassword(properties.getProperty("MYSQL_DB_PASSWORD"));
+										
+									try {
+										//establish a connection to the dataSource - the database
+										Connection connectionOp = dataSourceOp.getConnection();
+										Statement stmtOp = connectionOp.createStatement();
+										stmtOp.executeUpdate("update operationscount set num_updates = num_updates + 1");
+										stmtOp.close();
+										connectionOp.close();
+										} catch (SQLException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										}
+									} catch (IOException e1) {
+									e1.printStackTrace();
 								}
-				            } else {
-				            	try {
-					            	numRowsUpdated = stmt.executeUpdate(commandTextArea.getText());
-					            	JOptionPane.showMessageDialog(this, "Successful Update.." + numRowsUpdated + " rows updated.");
-				            	} catch (SQLException e1) {
-									JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
-								}
-				            }
-
-				           
-						} catch (SQLException e1) {
-							JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
+				        } catch (SQLException e1) {
+				        	JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
 						}
-					} else {
-						statusTextField.setText("Not Connected - User Credentials Do Not Match Properties Files!");
-					}
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
-			System.out.println(commandTextArea.getText());
-		//}
+				    } // end of else statement - executeUpdate  
+				    stmt.close();
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(this, e1.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE, null);
+				} // end of try catch to run command. If catch is execute, user does not have privelieges to run command
+			} else {
+				// connection not established - update GUI
+				statusTextField.setText("Not Connected - User Credentials Do Not Match Properties Files!");
+			} // end of if/else - checking for connectionEstablish
+
+			//System.out.println(commandTextArea.getText());
 		}
 		
 		if(e.getSource() == clearResultsButton) {
-			System.out.println("Clear Result button pressed!");
+			// cleat table results
 			tableModel.setColumnCount(0);
 			tableModel.setRowCount(0);
 		}
-	}
-}
+	} // end of actionPerfomed
+} // end of class
 
