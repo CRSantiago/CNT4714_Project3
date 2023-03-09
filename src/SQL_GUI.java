@@ -83,14 +83,13 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		
 		// label to identify connection panel
 		JLabel connectionTitle = new JLabel("Connection Details");
-//		connectionTitle.setOpaque(true);
 		connectionTitle.setForeground(Color.BLUE);
 		connectionTitle.setBounds(10,10,180,20);
 		connectionTitle.setFont(new Font("Lucida Console", Font.PLAIN, 12));
 		
 		JLabel fileLabel = new JLabel("Properties File");
 		fileLabel.setFont(new Font("Lucida Console", Font.PLAIN, 12));
-		fileLabel.setForeground(Color.BLACK);
+		fileLabel.setForeground(Color.BLACK); //change font color
 		fileLabel.setBounds(10,40,125,30);
 		fileLabel.setOpaque(true);
 		fileLabel.setBackground(Color.LIGHT_GRAY);
@@ -108,7 +107,7 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		usernameLabel.setBounds(10,80,125,30);
 		usernameLabel.setOpaque(true);
 		usernameLabel.setBackground(Color.LIGHT_GRAY);
-		usernameLabel.setBorder(new EmptyBorder(0,10,0,0));
+		usernameLabel.setBorder(new EmptyBorder(0,10,0,0)); // padding left
 		
 		usernameTextField = new JTextField();
 		usernameTextField.setFont(new Font("Lucida Console", Font.PLAIN, 12));
@@ -180,7 +179,6 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		JPanel statusPanel = new JPanel();
 		statusPanel.setPreferredSize(new Dimension(800,30));
 		statusPanel.setBorder(new EmptyBorder(0,0,20,0));
-//		statusPanel.setBackground(Color.yellow);
 		
 		statusTextField = new JTextField();
 		statusTextField.setText("No Connection");
@@ -288,7 +286,6 @@ public class SQL_GUI extends JFrame implements ActionListener {
 		} 
 		
 		if(e.getSource() == executeCommandButton) {
-			//System.out.println("Execute command button presses!");
 			if(connectionEstablished) {
 				try {
 					Connection connection = dataSource.getConnection();
@@ -405,8 +402,6 @@ public class SQL_GUI extends JFrame implements ActionListener {
 				// connection not established - update GUI
 				statusTextField.setText("Not Connected - User Credentials Do Not Match Properties Files!");
 			} // end of if/else - checking for connectionEstablish
-
-			//System.out.println(commandTextArea.getText());
 		}
 		
 		if(e.getSource() == clearResultsButton) {
